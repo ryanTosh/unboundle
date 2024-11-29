@@ -90,6 +90,17 @@
                 color: #888888;
             }
 
+            #submit {
+                margin-left: 8px;
+                font: inherit;
+                color: inherit;
+                background-color: #444444;
+                border: 1px solid #444444;
+                padding: 8px;
+                cursor: pointer;
+                font-weight: bold;
+            }
+
             #counter {
                 padding-left: 8px;
                 font-weight: bold;
@@ -160,6 +171,7 @@
             <p id="alpha">Alphabet:</p>
 
             <input type="text" id="guess" placeholder=""/>
+            <button id="submit">Guess</button>
             <span><span id="counter">1</span> / 6</span>
 
             <div id="grid"></div>
@@ -255,85 +267,99 @@
 
                 const sharebox = document.getElementById("sharebox");
 
-                input.addEventListener("keydown", function(event) {
-                    if ((event.code == "Enter" || event.code == "Return" || event.code == "NumpadEnter") && !event.ctrlKey && !event.altKey && !event.metaKey && !event.shiftKey) {
-                        const guess = input.value.trim().toLowerCase();
+                function submit() {
+                    const guess = input.value.trim().toLowerCase();
 
-                        if (!isWord(guess)) {
-                            alert("'" + guess[0].toUpperCase() + guess.slice(1) + "' is not a known word.");
+                    if (!guess) {
+                        input.focus();
+                        return;
+                    }
 
-                            return;
-                        }
+                    if (!isWord(guess)) {
+                        alert("'" + guess[0].toUpperCase() + guess.slice(1) + "' is not a known word.");
+                        input.focus();
 
-                        input.value = "";
+                        return;
+                    }
 
-                        const row = document.createElement("div");
+                    input.value = "";
 
-                        document.getElementById("grid").appendChild(row);
+                    const row = document.createElement("div");
 
-                        const tiles = [];
-                        const spare = [...word];
+                    document.getElementById("grid").appendChild(row);
 
-                        let gray = 0;
+                    const tiles = [];
+                    const spare = [...word];
 
-                        for (let i = 0; i < guess.length; i++) {
-                            const tile = document.createElement("div");
+                    let gray = 0;
 
-                            row.appendChild(tile);
-                            tiles.push(tile);
+                    for (let i = 0; i < guess.length; i++) {
+                        const tile = document.createElement("div");
 
-                            tile.textContent = guess[i].toUpperCase();
+                        row.appendChild(tile);
+                        tiles.push(tile);
 
-                            if (guess[i] == word[i]) {
-                                tile.classList.add("correct");
-                                spans[guess[i]].classList.add("correct");
-                                spare[i] = null;
-                            } else {
-                                spans[guess[i]].classList.add("wrong");
-                                gray++;
-                            }
-                        }
+                        tile.textContent = guess[i].toUpperCase();
 
-                        for (let i = 0; i < guess.length; i++) {
-                            const index = spare.indexOf(guess[i]);
-
-                            if (index != -1 && guess[i] != word[i]) {
-                                tiles[i].classList.add("close");
-                                spans[guess[i]].classList.add("close");
-                                spare[index] = null;
-                                gray--;
-                            }
-                        }
-
-                        grays.push(gray);
-
-                        if (guess == word) {
-                            input.disabled = true;
-                            setTimeout(alert, 0, "You got it! The word was '" + word + "'.");
-                            counter.style.color = "#00aa00";
-
-                            document.getElementById("share").style.display = "block";
-                            sharebox.value = "Unboundle: " + document.getElementById("date").textContent + "\n" + count + "/6\n\n" + grays.map(g => "⬜×" + g).join("\n") + "\n\nhttps://ryantosh.github.io/unboundle";
+                        if (guess[i] == word[i]) {
+                            tile.classList.add("correct");
+                            spans[guess[i]].classList.add("correct");
+                            spare[i] = null;
                         } else {
-                            counter.textContent = ++count;
-                            counter.style.color = "hsl(0, 100%, " + Math.min((130 - (count - 1) * 17.5), 100) + "%)";
-                            
-                            if (word.startsWith(guess)) {
-                                const cdots = document.createElement("div");
-                                row.appendChild(cdots);
-
-                                cdots.classList.add("cdots");
-                                cdots.textContent = "\xb7\xb7\xb7";
-                            }
-
-                            if (count == 7) {
-                                input.disabled = true;
-                                setTimeout(alert, 0, "Better luck next time. The word was '" + word + "'!");
-                                counter.textContent = "-";
-                            }
+                            spans[guess[i]].classList.add("wrong");
+                            gray++;
                         }
                     }
+
+                    for (let i = 0; i < guess.length; i++) {
+                        const index = spare.indexOf(guess[i]);
+
+                        if (index != -1 && guess[i] != word[i]) {
+                            tiles[i].classList.add("close");
+                            spans[guess[i]].classList.add("close");
+                            spare[index] = null;
+                            gray--;
+                        }
+                    }
+
+                    grays.push(gray);
+
+                    if (guess == word) {
+                        input.disabled = true;
+                        setTimeout(alert, 0, "You got it! The word was '" + word + "'.");
+                        counter.style.color = "#00aa00";
+
+                        document.getElementById("share").style.display = "block";
+                        sharebox.value = "Unboundle: " + document.getElementById("date").textContent + "\n" + count + "/6\n\n" + grays.map(g => "⬜×" + g).join("\n") + "\n\nhttps://ryantosh.github.io/unboundle";
+                    } else {
+                        counter.textContent = ++count;
+                        counter.style.color = "hsl(0, 100%, " + Math.min((130 - (count - 1) * 17.5), 100) + "%)";
+                        
+                        if (word.startsWith(guess)) {
+                            const cdots = document.createElement("div");
+                            row.appendChild(cdots);
+
+                            cdots.classList.add("cdots");
+                            cdots.textContent = "\xb7\xb7\xb7";
+                        }
+
+                        if (count == 7) {
+                            input.disabled = true;
+                            setTimeout(alert, 0, "Better luck next time. The word was '" + word + "'!");
+                            counter.textContent = "-";
+                        } else {
+                            input.focus();
+                        }
+                    }
+                }
+
+                input.addEventListener("keydown", function(event) {
+                    if ((event.code == "Enter" || event.code == "Return" || event.code == "NumpadEnter") && !event.ctrlKey && !event.altKey && !event.metaKey && !event.shiftKey) {
+                        submit();
+                    }
                 });
+
+                document.getElementById("submit").addEventListener("click", submit);
 
                 sharebox.addEventListener("click", function() {
                     sharebox.select();
